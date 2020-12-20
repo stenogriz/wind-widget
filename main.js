@@ -52,10 +52,9 @@ function createTable(items, items_sev) {
   let table = new UITable()
   let row = new UITableRow()
   let dt = row.addText("Mejvodnoe")
-  dt.font = Font.boldSystemFont(24)
   table.addRow(row)
   for (i=0; i<items["Vmid"].length; i++) {
-    let row = new UITableRow()
+    row = new UITableRow()
     let dt = row.addText(items["date"][i].replace("&nbsp;"," ").replace("&nbsp;"," "))
     let tm = row.addText(items["time"][i])
     let Vmin = row.addText(items["Vmin"][i])
@@ -71,15 +70,15 @@ function createTable(items, items_sev) {
     row.dismissOnSelect = false
     table.addRow(row)
   }
-  let row = new UITableRow()
-  let dt = row.addText("Sevastopol")
-  dt.font = Font.boldSystemFont(24)
+  row = new UITableRow()
+  dt = row.addText("Sevastopol")
   table.addRow(row)
-  for (item in items_sev["forecast"]["tabular"]["time"]){
-    let row = new UITableRow()
-    let dt = row.addText(item["@attributes"]["from"])
-    let Vspd = row.addText(item["windGust"]["@attributes"]["mps"])
-    let Vgust = row.addText(item["windSpeed"]["@attributes"]["mps"])
+  console.log(items_sev["forecast"]["tabular"]["time"].length)
+  for (i=0; i<items_sev["forecast"]["tabular"]["time"].length; i++){
+    row = new UITableRow()
+     dt = row.addText(items_sev["forecast"]["tabular"]["time"][i]["@attributes"]["from"].replace("T", " "))
+    let Vspd = row.addText(""+items_sev["forecast"]["tabular"]["time"][i]["windGust"]["@attributes"]["mps"])
+    let Vgust = row.addText(""+items_sev["forecast"]["tabular"]["time"][i]["windSpeed"]["@attributes"]["mps"])
     dt.widthWeight = 15
     Vspd.widthWeight = 4
     Vgust.widthWeight = 4
