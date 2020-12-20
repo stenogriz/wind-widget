@@ -77,26 +77,32 @@ async function createWidget(items) {
     console.log(average_wind)
   }
   average_wind = average_wind / 5 // last 5 readings average
+  let windText = ""
   let widget = new ListWidget()
   // Add spacer above content to center it vertically.
   widget.addSpacer()
   // Show article headline.
-  let titleElement = widget.addText(average_wind.toString()+" m//s")
+  let titleElement = widget.addText(average_wind.toString()+" m/s")
   if (average_wind < 6){
-    let windElement = widget.addText("Low wind, sorry.")
-    widget.backgroundColor = new Color("#0ab0a5")
+    windText = "Useless"
+    widget.backgroundColor = new Color("#3c7db5")
   } else if (average_wind > 9){
-    let windElement = widget.addText("Strong wind.")
-    widget.backgroundColor = new Color("#b00a0f")
+    windText = "Dangerous"
+    widget.backgroundColor = new Color("#b0483a")
   } else {
-    let windElement = widget.addText("Perfect wind.")
-    widget.backgroundColor = new Color("#62b00a")
+    windText = "Purrfect"
+    widget.backgroundColor = new Color("#59b03a")
   }
   let kiteText = min_size(average_wind) + " | " + ideal_size(average_wind) + " | " + max_size(average_wind)
+  let windElement = widget.addText(windText)
   let kiteElement = widget.addText(kiteText)
-  titleElement.font = Font.boldSystemFont(16)
+  titleElement.font = Font.boldSystemFont(24)
   titleElement.textColor = Color.white()
   titleElement.minimumScaleFactor = 0.75
+  titleElement.centerAlignText()
+  windElement.centerAlignText()
+  kiteElement.textColor = Color.white()
+  kiteElement.centerAlignText()
   // Add spacing below headline.
   widget.addSpacer()
   return widget
