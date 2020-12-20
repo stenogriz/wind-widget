@@ -8,20 +8,24 @@
 // http://surfradar.ru
 
 // configuration
-var user_weight_kg = 88
+var user_weight = 88 // kg
 
 // some coefficients
 var ms2kt = 1.94384
 
 // kite size calculations
-var ideal_size = (weight, wind_spd_ms) => {
-  return (2.175*weight)/(wind_spd_ms*ms2kt)
+var ideal_size = (wind_spd_ms) => {
+  if (wind_spd_ms == 0){
+    return 0
+  } else {
+    return (2.175*user_weight)/(wind_spd_ms*ms2kt)
+  }
 }
-var min_size = (weight, wind_spd_ms) => {
-  return 0.75*ideal_size(weight, wind_spd_ms)
+var min_size = (wind_spd_ms) => {
+  return 0.75*ideal_size(wind_spd_ms)
 }
-var max_size = (weight, wind_spd_ms) => {
-  return 1.5*ideal_size(weight, wind_spd_ms)
+var max_size = (wind_spd_ms) => {
+  return 1.5*ideal_size(wind_spd_ms)
 }
 
 let mejvodnoe = await mjvd_wind()
@@ -73,19 +77,23 @@ async function createWidget(items) {
     console.log(average_wind)
   }
   average_wind = average_wind / 5 // last 5 readings average
-  let gradient = new LinearGradient()
-  gradient.locations = [0, 1]
-  gradient.colors = [
-    new Color("#b00a0fe6"),
-    new Color("#b00a0fb3")
-  ]
   let widget = new ListWidget()
-  widget.backgroundColor = new Color("#b00a0f")
-  widget.backgroundGradient = gradient
   // Add spacer above content to center it vertically.
   widget.addSpacer()
   // Show article headline.
-  let titleElement = widget.addText(average_wind)
+  let titleElement = widget.addText(average_wind.toString()+" m//s")
+  if (average_wind < 6){
+    let windElement = widget.addText("Low wind, sorry.")
+    widget.backgroundColor = new Color("#0ab0a5")
+  } else if (average_wind > 9){
+    let windElement = widget.addText("Strong wind.")
+    widget.backgroundColor = new Color("#b00a0f")
+  } else {
+    let windElement = widget.addText("Perfect wind.")
+    widget.backgroundColor = new Color("#62b00a")
+  }
+  let kiteText = min_size(average_wind) + " | " + ideal_size(average_wind) + " | " + max_size(average_wind)
+  let kiteElement = widget.addText(kiteText)
   titleElement.font = Font.boldSystemFont(16)
   titleElement.textColor = Color.white()
   titleElement.minimumScaleFactor = 0.75
