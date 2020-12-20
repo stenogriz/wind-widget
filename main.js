@@ -1,8 +1,30 @@
+// wind-widget
+// Shows current wind on Mejhvodnoe and Sevastopol kite spots.
+// Data are actual weather station data (working only during summer season)
+// https://scriptable.app/ required to run the script on iOS/iPadOS
+// Thanks to authors of 'Read MacStories' script, which inspired me with its simplicity.
+// Data URLs:
 // http://www.wind-extreme.com/wind-mezhvodnoe/
 // http://surfradar.ru
 
+// configuration
+var user_weight_kg = 88
 
-mejvodnoe = await mjvd_wind()
+// some coefficients
+var ms2kt = 1.94384
+
+// kite size calculations
+var ideal_size = (weight, wind_spd_ms) => {
+  return (2.175*weight)/(wind_spd_ms*ms2kt)
+}
+var min_size = (weight, wind_spd_ms) => {
+  return 0.75*ideal_size(weight, wind_spd_ms)
+}
+var max_size = (weight, wind_spd_ms) => {
+  return 1.5*ideal_size(weight, wind_spd_ms)
+}
+
+let mejvodnoe = await mjvd_wind()
 
 if (config.runsInWidget) {
   // Tell the widget on the Home Screen to show our ListWidget instance.
@@ -43,9 +65,14 @@ function createTable(items) {
   return table
 }
 
-
 async function createWidget(items) {
-  let item = items["Vmid"][items["Vmid"].length-1]
+  // let wind = items["Vmid"][items["Vmid"].length-1]
+  let average_wind = 0
+  for (i = items["Vmid"].length-1; i > items["Vmid"].length-6; i--){
+    average_wind = average_wind + parseFloat(items["Vmid"][i])
+    console.log(average_wind)
+  }
+  average_wind = average_wind / 5 // last 5 readings average
   let gradient = new LinearGradient()
   gradient.locations = [0, 1]
   gradient.colors = [
@@ -58,36 +85,38 @@ async function createWidget(items) {
   // Add spacer above content to center it vertically.
   widget.addSpacer()
   // Show article headline.
-  let titleElement = widget.addText(item)
+  let titleElement = widget.addText(average_wind)
   titleElement.font = Font.boldSystemFont(16)
   titleElement.textColor = Color.white()
   titleElement.minimumScaleFactor = 0.75
   // Add spacing below headline.
+  widget.addSpacer()
   return widget
 }
-
 
 async function mjvd_wind(){
   let url = "http://www.wind-extreme.com/wind-mezhvodnoe/"
   let wv = new WebView()
   await wv.loadURL(url)
   let req = `
-function getShit(className, start, step){
-  a = [];
-elements = document.getElementsByClassName(className);
-for (let i = start; i < elements.length; i=i+step) {
+    function getData(className, start, step){
+      a = [];
+      elements = document.getElementsByClassName(className);
+      for (let i = start; i < elements.length; i=i+step) {
         a.push(elements[i].innerHTML); 
       }
-return a;}
+      return a;
+    }
 
-data = {};
-data["Vmax"] = getShit("style111", 1, 1);
-data["Vmid"] = getShit("style222", 1, 1);
-data["Vmin"] = getShit("style333", 1, 1);
-data["time"] = getShit("style71", 10, 6);
-data["date"] = getShit("style71", 9, 6);
-data;
-`
+    data = {};
+    data["Vmax"] = getData("style111", 1, 1);
+    data["Vmid"] = getData("style222", 1, 1);
+    data["Vmin"] = getData("style333", 1, 1);
+    data["time"] = getData("style71", 10, 6);
+    data["date"] = getData("style71", 9, 6);
+    data["temp"] = getData("style71", 13, 6);
+    data;
+  `
   let table = await wv.evaluateJavaScript(req)
   return table
 }
