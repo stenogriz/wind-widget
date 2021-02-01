@@ -74,11 +74,11 @@ function createTable(items, items_sev) {
   dt = row.addText("Sevastopol")
   table.addRow(row)
   console.log(items_sev["forecast"]["tabular"]["time"].length)
-  for (i=0; i<items_sev["forecast"]["tabular"]["time"].length; i++){
+  for (i=items_sev["forecast"]["tabular"]["time"].length-1; i>=0; i--){
     row = new UITableRow()
      dt = row.addText(items_sev["forecast"]["tabular"]["time"][i]["@attributes"]["from"].replace("T", " "))
-    let Vspd = row.addText(""+items_sev["forecast"]["tabular"]["time"][i]["windGust"]["@attributes"]["mps"])
-    let Vgust = row.addText(""+items_sev["forecast"]["tabular"]["time"][i]["windSpeed"]["@attributes"]["mps"])
+    let Vgust = row.addText(""+items_sev["forecast"]["tabular"]["time"][i]["windGust"]["@attributes"]["mps"])
+    let Vspd = row.addText(""+items_sev["forecast"]["tabular"]["time"][i]["windSpeed"]["@attributes"]["mps"])
     dt.widthWeight = 15
     Vspd.widthWeight = 4
     Vgust.widthWeight = 4
@@ -92,18 +92,15 @@ function createTable(items, items_sev) {
 
 async function createWidget(items, items_sev) {
   // let wind = items["Vmid"][items["Vmid"].length-1]
-  let average_wind = 0
-  for (i = 0; i < 5; i++){
-    average_wind = average_wind + parseFloat(items["Vmid"][i])
-    console.log(average_wind)
-  }
-  average_wind = average_wind / 6 // last 5 readings average
+  let average_wind = items_sev["forecast"]["tabular"]["time"][items_sev["forecast"]["tabular"]["time"].length-1]["windSpeed"]["@attributes"]["mps"]
   let windText = ""
   let widget = new ListWidget()
   // Add spacer above content to center it vertically.
   widget.addSpacer()
+  if (args.widgetParameter == "mjvd") {let spot = widget.addText("Межводное")}
+else if (args.widgetParameter == "sev") {let spot = widget.addText("Севастополь")} else {let spot = widget.addText("Севастополь")}
   // Show article headline.
-  let titleElement = widget.addText(average_wind.toString()+" m/s")
+  let titleElement = widget.addText(average_wind.toFixed(1)+" m/s")
   if (average_wind < 6){
     widget.backgroundColor = new Color("#3c7db5")
   } else if (average_wind > 9){
@@ -111,8 +108,9 @@ async function createWidget(items, items_sev) {
   } else {
     widget.backgroundColor = new Color("#59b03a")
   }
-  let kiteText = min_size(average_wind) + " | " + ideal_size(average_wind) + " | " + max_size(average_wind)
+  let kiteText = Math.round(min_size(average_wind)) + " | " + Math.round(ideal_size(average_wind)) + " | " + Math.round(max_size(average_wind))
   let kiteElement = widget.addText(kiteText)
+//   spot.centerAlignText()
   titleElement.font = Font.boldSystemFont(24)
   titleElement.textColor = Color.white()
   titleElement.minimumScaleFactor = 0.75
